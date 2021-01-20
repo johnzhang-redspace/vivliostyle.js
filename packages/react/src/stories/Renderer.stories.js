@@ -11,6 +11,7 @@ export default {
 
 const SOURCES = [
   "https://vivliostyle.github.io/vivliostyle_doc/samples/gon/index.html",
+  "http://localhost:3000/sample/MobyDick/manifest.json",
   "https://vivliostyle.github.io/vivliostyle_doc/samples/gutenberg/Alice.html",
 ];
 
@@ -33,12 +34,19 @@ export const Basic = () => (
     pageBorderWidth={number("Page Border Width", 1)}
     authorStyleSheet={text("Author Stylesheet", undefined)}
     userStyleSheet={text("User Stylesheet", undefined)}
+    navigateToInternalURLs={boolean("Navigate to Internal URLs", true)}
     onLoad={action("loaded")}
     onError={action("error")}
     onNavigation={action("navigation")}
     onMessage={(msg, type) => action("message")(type, msg.messages[0])}
     onReadyStateChange={action("readyStateChange")}
     onHyperlink={action("hyperlink")}
+    onSetInstance={(instance) => action("instance")(instance.initialized)}
+    onToCLoad={(toggleToC, isToCVisible, getToC) => {
+      toggleToC(true, true);
+      action("tocVisible")(isToCVisible);
+      action("tocItems", getToC());
+    }}
   />
 );
 
@@ -79,12 +87,19 @@ export const Narrowed = () => (
         pageBorderWidth={number("Page Border Width", 1)}
         authorStyleSheet={text("Author Stylesheet", undefined)}
         userStyleSheet={text("User Stylesheet", undefined)}
+        navigateToInternalURLs={boolean("Navigate to Internal URLs", true)}
         onLoad={action("loaded")}
         onError={action("error")}
         onNavigation={action("navigation")}
         onMessage={(msg, type) => action("message")(type, msg.messages[0])}
         onReadyStateChange={action("readyStateChange")}
         onHyperlink={action("hyperlink")}
+        onSetInstance={(instance) => action("instance")(instance.initialized)}
+        onToCLoad={(toggleToC, isToCVisible, getToC) => {
+          toggleToC(true, true);
+          action("tocVisible")(isToCVisible);
+          action("tocItems", getToC());
+        }}
       />
     </div>
   </div>

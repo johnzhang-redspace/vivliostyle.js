@@ -46,6 +46,13 @@ interface RendererProps {
   userStyleSheet?: string;
   authorStyleSheet?: string;
   style?: React.CSSProperties;
+  navigateToInternalURLs?: boolean;
+  onToCLoad?: (
+    toggleToC: (visible: boolean, autoHide: boolean) => void,
+    toCVisible: boolean | null,
+    toC: () => void
+  ) => void,
+  onSetInstance?: (instance: any) => void;
   onMessage?: (message: string, type: MessageType) => void;
   onError?: (error: string) => void;
   onReadyStateChange?: (state: ReadyState) => void;
@@ -70,6 +77,9 @@ export const Renderer: React.FC<RendererProps> = ({
   userStyleSheet,
   authorStyleSheet,
   style,
+  navigateToInternalURLs,
+  onToCLoad,
+  onSetInstance,
   onMessage,
   onError,
   onReadyStateChange,
@@ -160,6 +170,13 @@ export const Renderer: React.FC<RendererProps> = ({
 
     function handleLoaded() {
       onLoad && onLoad(stateRef.current!);
+      onSetInstance && onSetInstance(instance);
+      onToCLoad &&
+        onToCLoad(
+          (visible, autoHide) => instance.showTOC(visible, autoHide),
+          instance.isTOCVisible(),
+          () => instance.getTOC()
+        );
     }
 
     function handleNavigation(payload: NavigationPayload) {
@@ -176,6 +193,9 @@ export const Renderer: React.FC<RendererProps> = ({
 
     function handleHyperlink(payload: HyperlinkPayload) {
       onHyperlink && onHyperlink(payload);
+      if (navigateToInternalURLs && payload.href && payload.internal) {
+        instance.navigateToInternalUrl(payload.href);
+      }
     }
 
     const instance = instanceRef.current!;
@@ -198,6 +218,7 @@ export const Renderer: React.FC<RendererProps> = ({
       instance.removeListener("loaded", handleLoaded);
       instance.removeListener("nav", handleNavigation);
       instance.removeListener("hyperlink", handleHyperlink);
+      onSetInstance && onSetInstance(null);
       if (containerRef.current) {
         containerRef.current!.innerHTML = "";
       }
@@ -405,7 +426,7 @@ const Container = styled.div<Pick<RendererProps, "background">>`
 
     /* Gecko-only hack, see https://bugzilla.mozilla.org/show_bug.cgi?id=267029#c17 */
     @-moz-document regexp('.*') {
-      [data-vivliostyle-page-container]:nth-last-child(n + 2) {
+      [data-vivliostyle-page-container]:nth-last-of-type(n + 2) {
         top: -1px;
         margin-top: 1px;
         margin-bottom: -1px;
